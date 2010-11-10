@@ -4,7 +4,7 @@
 
 (defn process
   [params file output-dir]
-  (let [output-file (file-str (str output-dir "/" (:name params) (rand-int 10000)))]
+  (let [output-file (file-str (str output-dir "/" (:name params) "_" (System/currentTimeMillis)))]
     (with-out-writer output-file
       (let [run-pointer (load-file file)
             succ-gen (run-pointer params)]

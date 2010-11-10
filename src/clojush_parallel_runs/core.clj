@@ -22,7 +22,7 @@
     (if (nil? msg)
       (Thread/sleep 2000)
       (do (println "got msg: " msg)
-          (with-out-append-writer output-file (println msg))))
+          (with-out-append-writer output-file (prn-str msg))))
     (recur (mq/get-one "in"))))
 
 (defn -main [& args]

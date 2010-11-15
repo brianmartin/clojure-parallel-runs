@@ -19,6 +19,6 @@
   (init-connection connection-creds)
   (loop [msg (mq/get-one queue-name)]
     (if (not (nil? msg))
-      (process msg file output-dir))
-    (if (not= 0 (mq/message-queue-count queue-name))
-      (recur (mq/get-one queue-name)))))
+      (do
+        (process msg file output-dir))
+        (recur (mq/get-one queue-name)))))

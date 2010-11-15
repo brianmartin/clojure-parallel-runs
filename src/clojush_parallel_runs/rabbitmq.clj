@@ -23,5 +23,3 @@
                     (catch java.lang.Exception _ nil)))
 
 (defn send-one [q i] (publish chan q "" (String. (serialize i))))
-
-(defn message-queue-count [q] (message-count chan q))

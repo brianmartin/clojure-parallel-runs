@@ -20,5 +20,5 @@
   (loop [msg (mq/get-one queue-name)]
     (if (not (nil? msg))
       (do
-        (process msg file output-dir))
-        (recur (mq/get-one queue-name)))))
+        (process msg file output-dir)
+        (recur (mq/get-one queue-name))))))

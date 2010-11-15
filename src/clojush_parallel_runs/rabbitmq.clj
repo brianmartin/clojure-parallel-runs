@@ -24,4 +24,4 @@
 
 (defn send-one [q i] (publish chan q "" (String. (serialize i))))
 
-(defn message-count [q] (message-count chan queue))
+(defn message-queue-count [q] (message-count chan queue))

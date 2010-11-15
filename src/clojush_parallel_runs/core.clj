@@ -37,7 +37,7 @@
      [worker? w? "Process messages from queue."]
      [file f "Problem file to run."]
      [log-dir l "Worker output directory.  Can be the same for all workers." "~/worker-output"]]
-     
+
      (let [connection-params {:host host :port (Integer. port) :user user :pass pass}]
        (cond distribute? (distribute connection-params (load-file parameters))
              worker? (w/start-worker connection-params "out" file log-dir)

@@ -8,22 +8,22 @@
 (defn distribute 
   "Distributes a sequence of objects 
   (map, vector, seq, java obj, whatever)."
-  [connection-params msgs]
+  [connection-params q-out q-in msgs]
   (mq/init-connection connection-params)
-  (mq/declare-and-bind-queues "in" "out")
-  (doseq [m msgs] (do (mq/send-one "out" m)
+  (mq/declare-and-bind-queues q-in q-out)
+  (doseq [m msgs] (do (mq/send-one q-out m)
                       (println "sent: " m))))
 
 (defn receive-responses
   "Receives responses and writes them to file."
-  [connection-params output-file]
+  [connection-params q-in output-file]
   (mq/init-connection connection-params)
-  (loop [msg (mq/get-one "in")]
+  (loop [msg (mq/get-one q-in)]
     (if (nil? msg)
       (Thread/sleep 2000)
       (do (println "got msg: " msg)
           (with-out-append-writer output-file (prn msg))))
-    (recur (mq/get-one "in"))))
+    (recur (mq/get-one q-in))))
 
 (defn -main [& args]
   (with-command-line args "Parallel Clojush runs."
@@ -33,13 +33,16 @@
      [pass p "RabbitMQ password." "guest"]
      [distribute? d? "Distribute the parameters given by '--parameters'"]
      [parameters m "Clojure file providing a vector of parameter maps." "~/parameters.clj"]
+     [queue-name q "A distinct queue name for distribution and collection." "default"]
      [output-file o "Outputs information about runs performed on the parameters given." "/home/brian/head-output"]
      [worker? w? "Process messages from queue."]
      [file f "Problem file to run."]
      [log-dir l "Worker output directory.  Can be the same for all workers." "~/worker-output"]]
 
-     (let [connection-params {:host host :port (Integer. port) :user user :pass pass}]
-       (cond distribute? (distribute connection-params (load-file parameters))
-             worker? (w/start-worker connection-params "out" file log-dir)
-             :else (receive-responses connection-params output-file))))
+     (let [connection-params {:host host :port (Integer. port) :user user :pass pass}
+           q-in (str queue-name "-in")
+           q-out (str queue-name "-out")]
+       (cond distribute? (distribute connection-params q-out q-in (load-file parameters))
+             worker? (w/start-worker connection-params q-out q-in file log-dir)
+             :else (receive-responses connection-params q-in output-file))))
   (System/exit 0))

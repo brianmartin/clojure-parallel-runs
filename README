@@ -21,25 +21,27 @@ be doing a calculation with the number arguments.
 
 We may write the following, where params is a map of the parameters to
 be used for any given run.  An example set of parameters to be used in this
-case is {:name "a5b3" :a 5 :b 3 :input 5} (where name is used later to
-identify a run using this parameter map).  Also notice that 'example.calculation/calculator
+case is {:name "a=3" :a 5 :b 3 :input 5} (where name is used later to
+identify a run using this parameter map).  Also notice that #'example.calculation/run
 is added at the end.  This is necessary for a worker to know which function
 to call in which namespace run.
 
--  (ns example.calculation
--      (:use clojure.contrib.math))
--
--  (defn run [params]
--    (let [a (params :a)
--          b (params :b)
--          x (params :x)]
--      (* a (expt b x ))))
--
--  #'examples.calculation/run
+---calculation.clj----
+(ns example.calculation
+  (:use clojure.contrib.math))
+
+(defn run [params]
+(let [a (params :a)
+      b (params :b)
+      x (params :x)]
+  (* a (expt b x ))))
+
+#'examples.calculation/run
+---------------------
 
 4.  We must define the parameters to be distributed.  This is done in clojure.
 As an example, to define parameters for 10 runs with a=3 and b=[0 10)
-and three runs with a=4 and b=[0 10), put the following clojure code into a
+and 10 runs with a=4 and b=[0 10), put the following clojure code into a
 file (here saved as parameters.clj).
 
 ---parameters.clj---

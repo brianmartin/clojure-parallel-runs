@@ -1,114 +1,117 @@
 To use:
 
-1. Make sure a RabbitMQ server is available.  Here that server will be
-located at 127.0.0.1:5672 with username "guest" and password "guest".
+1. a) Make sure a RabbitMQ server is available.  For the examples, that server
+      will be located at 127.0.0.1:5672 with username "guest" and password "guest".
+
+   b) Install Leiningen, the Clojure dependency management tool.  It is available
+      with installation instructions at: TODO
 
 2. Compile the project by running:
 
         $ lein deps
         $ lein uberjar
 
-3. Modify a Clojush problem file in the following way.  Here the example will
-be for the lawnmower problem included in the Clojush distribution.
+3. Write a Clojure file in the following way.  Here the example will
+be doing a calculation with the number arguments.
 
-The original call to pushgp is:
-
--  (pushgp
--    :error-function (lawnmower-fitness 5 5 100)
--    :atom-generators (list 'left 'mow 'v8a 'frog (fn [] [(rand-int 8) (rand-int 8)]))
--    :mutation-probability mutation-probability
--    :crossover-probability 0.3
--    :simplification-probability 0.3
--    :reproduction-simplifications 10
--    :max-points 200
--    :evalpush-limit 1000)
-
-This is modified to the following.  Where params is a map of the parameters to
+We may write the following, where params is a map of the parameters to
 be used for any given run.  An example set of parameters to be used in this
-case is {:name "5x5" :lawn-dimensions [5 5]} (where name is used later to
-identify a run using this parameter map).  Also notice that 'examples.lawnmower
-is added at the end.  This is necessary for a worker to know in which namespace
-to call run.
+case is {:name "a5b3" :a 5 :b 3 :input 5} (where name is used later to
+identify a run using this parameter map).  Also notice that 'example.calculation/calculator
+is added at the end.  This is necessary for a worker to know which function
+to call in which namespace run.
 
--   (defn run [params]
--     (let [[lawn-rows lawn-cols] (params :lawn-dimensions)
--           atom-generators (params :atom-generators)
--           mutatition-probability (params :mutation-probability)]
--     (pushgp
--       :error-function (lawnmower-fitness lawn-rows lawn-cols 100)
--       :atom-generators (concat atom-generators
--                                (list (fn [] [(rand-int 8) (rand-int 8)])))
--       :mutation-probability mutation-probability
--       :crossover-probability 0.3
--       :simplification-probability 0.3
--       :reproduction-simplifications 10
--       :max-points 200
--       :evalpush-limit 1000))
+-  (ns example.calculation
+-      (:use clojure.contrib.math))
 -
--   'examples.lawnmower
+-  (defn run [params]
+-    (let [a (params :a)
+-          b (params :b)
+-          x (params :x)]
+-      (* a (expt b x ))))
+-
+-  'examples.calculation/run
 
-3.  We must define the parameters to be distributed.  This is done in clojure.
-As an example, to define parameters for eight runs with lawn-dimensions 5 x 5
-and three runs with lawn-dimensions 8 x 4, put the following clojure code into a
-file (here referred to as parameters.clj).
+4.  We must define the parameters to be distributed.  This is done in clojure.
+As an example, to define parameters for 10 runs with a=3 and b=[0 10)
+and three runs with a=4 and b=[0 10), put the following clojure code into a
+file (here saved as parameters.clj).
 
 ---parameters.clj---
-(flatten (vector 
-  (repeat 8 {:name "5x5"
-             :lawn-dimensions [5 5]})
-  (repeat 3 {:name "8x4"
-             :lawn-dimensions [8 4]})))
+(flatten (vector
+  (for [i (range 10)]
+    {:name "a=3"
+     :a 3
+     :b i
+     :input 10})
+  (for [i (range 10)]
+    {:name "a=4"
+     :a 4
+     :b i
+     :input 10})))
 -------------------
 
-4. Start the workers.  On each machine run:
+The only requirement is that the code should produce a seq/vec/list of parameter
+maps, and those parameter maps should include :name if a log file is to be saved.
 
-     $ java -jar clojush-parallel-runs.jar \
-          --worker --file /home/user/lawnmower.clj --log-dir /home/user/worker-logs \
-          --host 127.0.0.1 --port 5672 --user guest --pass guest
+5. Distribute the paramaters.
 
-Where host, port, user, and pass pertain to the RabbitMQ server.
-
-5. Distribute the paramaters.  On one machine (call it the head node) run:
-
-     $ java -jar clojush-parallel-runs.jar \
+     $ java -jar clojure-parallel-runs.jar \
           --distribute --parameters /home/user/parameters.clj \
           --host 127.0.0.1 --port 5672 --user guest --pass guest
 
-6. The output of each run will written to the specified log directory on each
+   Where host, port, user, and pass pertain to the RabbitMQ server.
+
+6. Start the workers.
+
+    a) Ensure that you have passwordless ssh access to each host in the hosts file.
+
+    b) Make a hosts file of the form:
+
+       your_username_on_host1 host_or_ip_address1
+       your_username_on_host2 host_or_ip_address2
+
+       a more concrete example:
+
+       ---hosts---
+       btm08 compute-1-1
+       btm08 compute-1-2
+       brian 127.0.0.1
+       -----------
+
+    c) run the command as follows:
+
+       $ ./start-workers.sh "java -jar clojure-parallel-runs.jar \
+                                --worker \
+                                --file /home/user/calculation.clj \
+                                --host 127.0.0.1
+                                --port 5672
+                                --user guest
+                                --pass guest" < hosts
+
+       Where host, port, user, and pass pertain to the RabbitMQ server.
+
+    d) The workers will process the parameters, and the return values will accumulate.
+       Workers will exit when there are no more parameters to be retrieved.
+
+
+7. The output of each run will written to the specified log directory on each
 worker.  The log file name will be the value of :name given in the parameter
-map followed by random digits.
+map followed by the current time in milliseconds.
 
-Extra functionality:
+To retrieve the return values and write them to an output-file run:
 
-Note: The return value of pushgp in the vanilla Clojush distribution is nil.  So the
-following requires modification to the pushgp function in clojush.clj to be
-useful.
-
-The return values of pushgp (from each worker) are placed in a queue.  To
-retreive these values and write them to a file, run the following:
-
-     $ java -jar clojush-parallel-runs.jar \
-          --output-file /home/user/head-output
+     $ java -jar clojure-parallel-runs.jar \
+          --output-file /home/user/output-file
           --host 127.0.0.1 --port 5672 --user guest --pass guest
 
-This will write all messages in the reply queue to the file specified by
---output-file.
+In this example for the parameters.clj used above, /home/user/output-file will
+contain:
 
-For example, if pushgp is modified to return the generation at which success
-has occurred then for the parameters.clj used above, /home/user/head-output
-will contain:
-
----head-output---
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x52734, :success-generation 3}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x53832, :success-generation 3}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x56526, :success-generation 5}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x58389, :success-generation 6}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x58456, :success-generation 5}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x59791, :success-generation 3}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x52346, :success-generation 4}
-{:name 5x5, :paramaters-used {:name 5x5, :lawn-dimensions [5 5]}, :log-file 5x53058, :success-generation 2}
-{:name 8x4, :paramaters-used {:name 8x4, :lawn-dimensions [8 4]}, :log-file 8x44598, :success-generation 11}
-{:name 8x4, :paramaters-used {:name 8x4, :lawn-dimensions [8 4]}, :log-file 8x45389, :success-generation 10}
-{:name 8x4, :paramaters-used {:name 8x4, :lawn-dimensions [8 4]}, :log-file 8x42195, :success-generation 9}
-----------------
-
+---output-file---
+...
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 3, :input 10}, :log-file 5x58389, :return-value 177147
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 4, :input 10}, :log-file 5x58456, :return-value 3145728}
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 5, :input 10}, :log-file 5x59791, :return-value 29296875}
+...
+-----------------

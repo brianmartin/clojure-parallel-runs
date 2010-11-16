@@ -1,5 +1,5 @@
-(ns clojush-parallel-runs.worker
-  (:use [clojush-parallel-runs.rabbitmq :as mq]
+(ns clojure-parallel-runs.worker
+  (:use [clojure-parallel-runs.rabbitmq :as mq]
         [clojure.contrib.duck-streams :only [with-out-writer file-str]]))
 
 (defn process
@@ -7,11 +7,11 @@
   (let [output-file (file-str (str output-dir "/" (:name params) "_" (System/currentTimeMillis)))]
     (with-out-writer output-file
       (let [run-pointer (load-file file)
-            succ-gen (run-pointer params)]
+            return-value (run-pointer params)]
         (mq/send-one q-in {:name (:name params)
                            :paramaters-used params
                            :log-file (.getName output-file)
-                           :success-generation succ-gen})))))
+                           :return-value return-value})))))
 
 (defn start-worker
   "Process params from the queue (if none, waits 10 seconds)."

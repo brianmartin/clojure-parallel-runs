@@ -1,4 +1,4 @@
-(ns clojush-parallel-runs.rabbitmq
+(ns clojure-parallel-runs.rabbitmq
   (:use [rabbitcj.client]
         [clj-serializer.core]))
 

@@ -1,6 +1,6 @@
-(ns clojush-parallel-runs.core
-  (:use [clojush-parallel-runs.rabbitmq :as mq]
-        [clojush-parallel-runs.worker :as w]
+(ns clojure-parallel-runs.core
+  (:use [clojure-parallel-runs.rabbitmq :as mq]
+        [clojure-parallel-runs.worker :as w]
         [clojure.contrib.duck-streams :only [with-out-append-writer]]
         [clojure.contrib.command-line])
   (:gen-class))

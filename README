@@ -63,6 +63,7 @@ maps, and those parameter maps should include :name if a log file is to be saved
 
      $ java -jar clojure-parallel-runs.jar \
           --distribute --parameters /home/user/parameters.clj \
+          --queue-name my_run \
           --host 127.0.0.1 --port 5672 --user guest --pass guest
 
    Where host, port, user, and pass pertain to the RabbitMQ server.
@@ -89,12 +90,14 @@ maps, and those parameter maps should include :name if a log file is to be saved
        $ ./start-workers.sh "java -jar clojure-parallel-runs.jar \
                                 --worker \
                                 --file /home/user/calculation.clj \
+                                --queue-name my_run \
                                 --host 127.0.0.1
                                 --port 5672
                                 --user guest
                                 --pass guest" < hosts
 
-       Where host, port, user, and pass pertain to the RabbitMQ server.
+       Where host, port, user, and pass pertain to the RabbitMQ server, and
+       queue-name matches the one with which parameters where distributed.
 
     d) The workers will process the parameters, and the return values will accumulate.
        Workers will exit when there are no more parameters to be retrieved.
@@ -108,6 +111,7 @@ To retrieve the return values and write them to an output-file run:
 
      $ java -jar clojure-parallel-runs.jar \
           --output-file /home/user/output-file
+          --queue-name my_run \
           --host 127.0.0.1 --port 5672 --user guest --pass guest
 
 In this example for the parameters.clj used above, /home/user/output-file will

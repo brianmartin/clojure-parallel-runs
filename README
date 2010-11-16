@@ -1,10 +1,15 @@
+This material is based upon work supported by the National Science
+Foundation under Grant No. 1017817. Any opinions, findings, and conclusions or
+recommendations expressed in this publication are those of the authors and do
+not necessarily reflect the views of the National Science Foundation.
+
 To use:
 
-1. a) Make sure a RabbitMQ server is available.  For the examples, that server
+1. a) Make sure a RabbitMQ server is available.  For the example, that server
       will be located at 127.0.0.1:5672 with username "guest" and password "guest".
 
    b) Install Leiningen, the Clojure dependency management tool.  It is available
-      with installation instructions at: TODO
+      with installation instructions at: https://github.com/technomancy/leiningen
 
 2. Compile the project by running:
 
@@ -30,7 +35,7 @@ to call in which namespace run.
 -          x (params :x)]
 -      (* a (expt b x ))))
 -
--  'examples.calculation/run
+-  #'examples.calculation/run
 
 4.  We must define the parameters to be distributed.  This is done in clojure.
 As an example, to define parameters for 10 runs with a=3 and b=[0 10)
@@ -110,8 +115,8 @@ contain:
 
 ---output-file---
 ...
-{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 3, :input 10}, :log-file 5x58389, :return-value 177147
-{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 4, :input 10}, :log-file 5x58456, :return-value 3145728}
-{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 5, :input 10}, :log-file 5x59791, :return-value 29296875}
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 3, :input 10}, :log-file a=3_1289937662263, :return-value 177147
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 4, :input 10}, :log-file a=3_1289937685082, :return-value 3145728}
+{:name "a=3", :paramaters-used {:name "a=3", :a 3, :b 5, :input 10}, :log-file a=3_1289937716053, :return-value 29296875}
 ...
 -----------------

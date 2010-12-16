@@ -29,8 +29,8 @@
   "Empties the given queues"
   [connection-params & queues]
   (doseq [q queues]
-    (dotimes [i 10000]
-      (mq/get-one q))))
+    (while (mq/get-one q)
+      nil)))
 
 (defn -main [& args]
   (with-command-line args "Parallel Clojush runs."

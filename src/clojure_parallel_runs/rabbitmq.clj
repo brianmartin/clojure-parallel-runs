@@ -23,8 +23,8 @@
 (defn get-one 
   "Get one message from the queue with the given name."
   [q] (try (read-json (String. (.. chan (basicGet q true) (getBody))) true)
-                    (catch java.lang.Exception e (println e))))
+        (catch java.lang.Exception e (println e))))
 
 (defn send-one
   "Get one message from the queue with the given name."
-  [q i] (println (json-str i)) (publish chan q "" (json-str i)))
+  [q i] (publish chan q "" (json-str i)))

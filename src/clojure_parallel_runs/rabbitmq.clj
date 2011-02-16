@@ -22,7 +22,7 @@
 
 (defn get-one 
   "Get one message from the queue with the given name."
-  [q] (try (read-json (String. (.. chan (basicGet q true) (getBody))))
+  [q] (try (read-json (String. (.. chan (basicGet q true) (getBody))) true)
                     (catch java.lang.Exception e (println e))))
 
 (defn send-one

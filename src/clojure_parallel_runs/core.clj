@@ -6,8 +6,7 @@
   (:gen-class))
 
 (defn distribute
-  "Distributes a sequence of objects
-  (map, vector, seq, java obj, whatever)."
+  "Distributes a message (map, vector, or seq of JSON acceptable values)."
   [connection-params q-out q-in msgs]
   (mq/init-connection connection-params)
   (mq/declare-and-bind-queues q-in q-out)

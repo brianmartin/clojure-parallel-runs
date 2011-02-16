@@ -39,7 +39,6 @@
      [output-file o "Outputs information about runs performed on the parameters given." "~/output"]
      [worker? w? "Process messages from queue."]
      [clear? c? "Clears the specified queue of all messages."]
-     [file f "Problem file to run."]
      [log-dir l "Worker log directory.  Can be the same for all workers." nil]
      [host h "RabbitMQ host name." "127.0.0.1"]
      [port P "RabbitMQ port number." "5672"]
@@ -50,7 +49,7 @@
            q-in (str queue-name "-in")
            q-out (str queue-name "-out")]
        (cond distribute? (distribute connection-params q-out q-in (load-file parameters))
-             worker? (w/start-worker connection-params q-out q-in file log-dir)
+             worker? (w/start-worker connection-params q-out q-in log-dir)
              clear? (clear connection-params q-out q-in)
              :else (receive-responses connection-params q-in output-file))))
   (System/exit 0))

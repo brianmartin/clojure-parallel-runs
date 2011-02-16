@@ -6,8 +6,10 @@
   "Given 'logs' and 'name', outputs a File for 'logs/name/Wed_Feb_16_12:50:36_EST_20111297878636191"
   [output-dir param-name]
   (if output-dir
-    (file-str (str output-dir "/" param-name "/"
-                (-> (java.util.Date.) (.toString) (.replace \space \_) (.concat (str (System/currentTimeMillis))))))))
+    (do
+      (let [f (file-str (str output-dir "/" param-name))] (if (not (.exists f)) (.mkdir f)))
+      (file-str (str output-dir "/" param-name "/"
+                  (-> (java.util.Date.) (.toString) (.replace \space \_) (.concat (str (System/currentTimeMillis)))))))))
 
 (defn process
   [params q-in output-dir]
